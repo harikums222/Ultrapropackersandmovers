@@ -322,7 +322,8 @@ function closeModal() {
 async function submitToAPI(data, form) {
     // Replace with your actual Netlify site URL once deployed
     // Example: https://ultra-pro0-packers.netlify.app/.netlify/functions/quote
-    const API_ENDPOINT = '/.netlify/functions/quote';
+    //const API_ENDPOINT = '/.netlify/functions/quote';
+    const API_ENDPOINT = 'https://ultrapropackersandmovers.netlify.app/.netlify/functions/quote';
 
     try {
         const response = await fetch(API_ENDPOINT, {

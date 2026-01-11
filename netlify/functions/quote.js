@@ -51,6 +51,7 @@ exports.handler = async (event, context) => {
 
         const text = `
 🚚 *New Quote Request*
+
 👤 *Name*: ${name}
 📞 *Phone*: ${phone}
 📧 *Email*: ${email || 'Not provided'}
@@ -58,6 +59,7 @@ exports.handler = async (event, context) => {
 📍 *From*: ${from}
 🏁 *To*: ${to}
 📝 *Note*: ${message || '-'}
+
 Source: Ultra Pro Website
     `.trim();
 
@@ -97,4 +99,5 @@ Source: Ultra Pro Website
         };
     }
 };
+
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-color-scheme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -31,11 +31,12 @@
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17847560693"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-      gtag('config', 'AW-17847560693');
+        gtag('config', 'AW-17847560693');
+        gtag('config', 'GT-NGJVRWC5');
     </script>
 </head>
 
@@ -46,56 +47,32 @@
             <div class="header-content">
                 <div class="logo">
                     <img src="images/logo/Company_logo.png" alt="Ultra Pro Packers - Professional Moving Services"
-                        style="height:60px; width:auto;">
-                    <span>ULTRA PRO</span>
+                        class="logo-img">
+                    <div class="logo-text">
+                        <span class="logo-title">Ultra Pro</span>
+                        <span class="logo-subtitle">Packers and Movers</span>
+                    </div>
                 </div>
                 <nav class="nav">
                     <ul class="nav-list">
-                        <li>
-                            <a href="index.html#home" class="nav-link nav-link-vertical">
-                                <i class="fa-solid fa-house"></i>
-                                <span>Home</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="index.html#services" class="nav-link nav-link-vertical">
-                                <i class="fa-solid fa-truck-fast"></i>
-                                <span>Services</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="pricing.html" class="nav-link nav-link-vertical active">
-                                <i class="fa-solid fa-tags"></i>
-                                <span>Pricing</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="index.html#about" class="nav-link nav-link-vertical">
-                                <i class="fa-solid fa-circle-info"></i>
-                                <span>About</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="index.html#contact" class="nav-link nav-link-vertical">
-                                <i class="fa-solid fa-headset"></i>
-                                <span>Contact</span>
-                            </a>
-                        </li>
+                        <li><a href="index.html#home" class="nav-link">Home</a></li>
+                        <li><a href="index.html#services" class="nav-link">Services</a></li>
+                        <li><a href="pricing.html" class="nav-link active">Pricing</a></li>
+                        <!-- <li><a href="gallery.html" class="nav-link">Gallery</a></li> -->
+                        <li><a href="faq.html" class="nav-link">FAQ</a></li>
+                        <li><a href="index.html#about" class="nav-link">About</a></li>
+                        <li><a href="index.html#contact" class="nav-link">Contact</a></li>
                     </ul>
                 </nav>
 
                 <div class="header-contact">
                     <div class="phone-numbers">
-                        <a href="tel:+918122232287" class="phone-link">
-                            <i class="fas fa-phone"></i>
-                            +91 81222 32287
-                        </a>
                         <a href="tel:+916382837690" class="phone-link">
                             <i class="fas fa-phone"></i>
                             +91 63828 37690
                         </a>
                     </div>
-                    <a href="index.html#contact" class="btn btn--primary quote-btn">Get Quote</a>
+                    <button class="btn btn--primary quote-btn" onclick="openQuoteModal()">Get Quote</button>
                 </div>
                 <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
                     <span></span>
@@ -109,7 +86,47 @@
     <main>
         <section class="pricing-hero">
             <div class="container">
-                <h1 class="section-title" style="color: white; margin-bottom: 0;">Transparent Pricing</h1>
+                <h1 class="hero-mini-title">Transparent Pricing</h1>
+                <p class="pricing-badge">
+                    <i class="fas fa-tags"></i> Our services start from just Rs 2000*
+                </p>
+            </div>
+        </section>
+
+        <!-- Why Trust Our Pricing? Section -->
+        <section class="pricing-trust-bullets">
+            <div class="container">
+                <div class="pricing-trust-list">
+                    <div class="trust-item">
+                        <i class="fas fa-arrow-right"></i>
+                        <div class="trust-item-text">
+                            <strong>Market-Aligned Rates:</strong>
+                            Our quotations are always inline with current market standards, ensuring you get premium
+                            service at a fair price.
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <i class="fas fa-arrow-right"></i>
+                        <div class="trust-item-text">
+                            <strong>Locked-In Pricing:</strong>
+                            We don’t change our quote after your service order is confirmed. No hidden fees or moving
+                            day surprises.
+                            <br> <small><em>(<strong>Exception:</strong> If the actual work is much more than expected
+                                    on moving day (for example, a long 200m extra walk to the truck or a lift was
+                                    available
+                                    but most items don’t fit and must be carried by stairs).</em></small>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <i class="fas fa-arrow-right"></i>
+                        <div class="trust-item-text">
+                            <strong>Insurance & Assurance:</strong>
+                            We not only provide our professional basic assurance but also optional comprehensive
+                            transport
+                            insurance (Add-on).
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -118,7 +135,7 @@
                 <div class="pricing-grid">
                     <div class="pricing-table-container">
                         <h3>Estimated Relocation Rates</h3>
-                        <div style="overflow-x: auto;">
+                        <div class="u-overflow-auto">
                             <table class="pricing-table">
                                 <thead>
                                     <tr>
@@ -179,18 +196,23 @@
                                     </tr>
                                     <tr>
                                         <td><strong>Office</strong></td>
-                                        <td colspan="3" style="text-align: center;">Custom pricing</td>
+                                        <td colspan="3" class="u-text-center">Custom pricing</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>2 / 4 wheelers</strong></td>
-                                        <td colspan="3" style="text-align: center;">Custom pricing</td>
+                                        <td><strong>Bike & Car Transport</strong></td>
+                                        <td colspan="3" class="u-text-center">Custom pricing</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="pricing-actions">
-                            <a href="index.html#contact" class="btn btn--primary">Book an Appointment</a>
-                            <a href="index.html#contact" class="btn btn--secondary">Request Custom Quote</a>
+                        <p class="pricing-disclaimer u-mt-24">
+                            <i class="fas fa-circle-info"></i> <strong>Disclaimer:</strong> The rates shown above are
+                            estimated data based on our past operations. Final pricing may change according to your
+                            specific volume, distance, floor level, and packing requirements.
+                        </p>
+                        <div class="pricing-actions u-justify-center u-mt-48">
+                            <button class="btn btn--primary btn--lg" onclick="openQuoteModal()">Get Your Free Quote Now
+                                &rarr;</button>
                         </div>
                     </div>
                 </div>
@@ -201,19 +223,13 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-top">
-                <div class="footer-logo">
-                    <img src="images/logo/Company_logo.png" style="height:40px; width:auto;">
-                    <span>ULTRA PRO</span>
-                </div>
-                <p class="footer-tagline">Reliable Door-to-Door Delivery All Over India</p>
-            </div>
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>Quick Links</h4>
                     <ul class="footer-links">
                         <li><a href="index.html#home" class="nav-link">Home</a></li>
                         <li><a href="pricing.html" class="nav-link">Pricing</a></li>
+                        <li><a href="faq.html" class="nav-link">FAQ</a></li>
                         <li><a href="index.html#about" class="nav-link">About</a></li>
                         <li><a href="index.html#services" class="nav-link">Services</a></li>
                         <li><a href="index.html#contact" class="nav-link">Contact</a></li>
@@ -240,24 +256,75 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Ultra Pro Packers & Movers. All rights reserved.</p>
+                <p>&copy; 2026 Ultra Pro Packers & Movers. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Quote Submission Modal -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content modal-content--form">
+            <button class="modal-close" onclick="closeQuoteModal()">&times;</button>
+            <h3>Get Your Free Quote</h3>
+            <p>Fill in the details below and we'll get back to you within 30 minutes.</p>
+            <form class="contact-form" id="modalQuoteForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modal-name" class="form-label">Full Name *</label>
+                        <input type="text" id="modal-name" name="name" class="form-control" maxlength="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-phone" class="form-label">Phone Number *</label>
+                        <input type="tel" id="modal-phone" name="phone" class="form-control" maxlength="10" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modal-service" class="form-label">Service Required *</label>
+                    <select id="modal-service" name="service" class="form-control" required>
+                        <option value="">Select a service</option>
+                        <option value="home-relocation">Home Relocation</option>
+                        <option value="office-shifting">Office Shifting</option>
+                        <option value="expert-packing">Expert Packing</option>
+                        <option value="bike-transport">Bike/Scooty Transport</option>
+                        <option value="car-transport">Car Transport</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modal-from" class="form-label">Moving From *</label>
+                        <input type="text" id="modal-from" name="moving_from" class="form-control"
+                            placeholder="City or Area" maxlength="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-to" class="form-label">Moving To *</label>
+                        <input type="text" id="modal-to" name="moving_to" class="form-control"
+                            placeholder="City or Area" maxlength="50" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modal-notes" class="form-label">Additional Information (Optional)</label>
+                    <textarea id="modal-notes" name="additional_info" class="form-control"
+                        placeholder="Any special instructions or fragile items?" maxlength="255"></textarea>
+                </div>
+                <button type="submit" class="btn btn--primary btn--full-width">Send Quote Request</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Custom Success Modal -->
     <div id="successModal" class="modal">
         <div class="modal-content">
             <i class="fas fa-check-circle success-icon"></i>
             <h2>Thank You!</h2>
-            <p>Your quote request has been sent successfully. Our team will contact you within 30 minutes.</p>
-            <button class="btn btn--primary" onclick="closeModal()">Close</button>
+            <p>Your quote request has been received successfully. Our team will contact you within 30 minutes.</p>
+            <button class="btn btn--primary" onclick="closeModal('successModal')">Close</button>
         </div>
     </div>
 
     <!-- Sticky Bottom CTA (Mobile Only) -->
     <div class="sticky-cta">
-        <a href="tel:+918122232287" class="cta-item call">
+        <a href="tel:+916382837690" class="cta-item call">
             <i class="fas fa-phone"></i>
             <span>Call Now</span>
         </a>

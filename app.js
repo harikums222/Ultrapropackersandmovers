@@ -1,63 +1,40 @@
 // Ultra Pro Packers & Movers - JavaScript functionality
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize all functionality when DOM is loaded
+    // 1. Core Visuals & UI
     initializeNavigation();
-    initializeContactForm();
-    initializeScrollEffects();
-    initializeServiceCardTilt();
+    initializeNavigationObserver();
     initializeMobileMenu();
-    initializeFooterLinks();
-    initializeAboutStatsCounter();
+    initializeServiceCardTilt();
+    initializeScrollEffects();
+    initializeRevealObserver(); // Integrated animations & stats
+
+    // 2. Interactive Lead Capture
+    initializeContactForm(); // Restored
+    initializeServicesTabs();
+    initializeDynamicGallery();
+
+    // 3. Authority & Tracking
+    initializeEventTracking();
 });
 
 // Navigation functionality
 function initializeNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('.nav-link, .footer-links .nav-link');
 
     navLinks.forEach(link => {
         link.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
 
-            // If it's an external link or a link to another page (not just a hash)
-            if (!href.startsWith('#') && !href.includes(window.location.pathname.split('/').pop() + '#')) {
-                return; // Let the default navigation happen
-            }
+            if (href.startsWith('#') || href.includes(window.location.pathname.split('/').pop() + '#')) {
+                const hash = href.includes('#') ? href.substring(href.indexOf('#')) : href;
+                const targetSection = document.querySelector(hash);
 
-            // Extract hash
-            const hash = href.includes('#') ? href.substring(href.indexOf('#')) : href;
-            const targetSection = document.querySelector(hash);
-
-            if (targetSection) {
-                e.preventDefault();
-                smoothScrollTo(targetSection);
-                closeMobileMenu();
-            }
-        });
-    });
-
-    // Update active nav link based on scroll position
-    window.addEventListener('scroll', updateActiveNavLink);
-}
-
-// Initialize footer links
-function initializeFooterLinks() {
-    const footerNavLinks = document.querySelectorAll('.footer-links .nav-link');
-
-    footerNavLinks.forEach(link => {
-        link.addEventListener('click', function (e) {
-            const href = this.getAttribute('href');
-
-            if (!href.startsWith('#') && !href.includes(window.location.pathname.split('/').pop() + '#')) {
-                return;
-            }
-
-            const hash = href.includes('#') ? href.substring(href.indexOf('#')) : href;
-            const targetSection = document.querySelector(hash);
-
-            if (targetSection) {
-                e.preventDefault();
-                smoothScrollTo(targetSection);
+                if (targetSection) {
+                    e.preventDefault();
+                    smoothScrollTo(targetSection);
+                    closeMobileMenu();
+                }
             }
         });
     });
@@ -94,29 +71,33 @@ function scrollToContact() {
     }
 }
 
-// Update active navigation link based on scroll position
-function updateActiveNavLink() {
-    const sections = document.querySelectorAll('section[id]');
+// Update active navigation link based on scroll position - Re-implemented with IntersectionObserver for efficiency
+function initializeNavigationObserver() {
     const navLinks = document.querySelectorAll('.nav-link');
-    const headerHeight = document.querySelector('.header').offsetHeight;
+    const sections = document.querySelectorAll('section[id]');
 
-    let currentSection = '';
+    if (!sections.length || !navLinks.length) return;
 
-    sections.forEach(section => {
-        const sectionTop = section.getBoundingClientRect().top;
-        const sectionHeight = section.offsetHeight;
+    const options = {
+        rootMargin: '-20% 0px -70% 0px', // Trigger when section is in top-ish part of viewport
+        threshold: 0
+    };
 
-        if (sectionTop <= headerHeight + 100 && sectionTop + sectionHeight > headerHeight + 100) {
-            currentSection = section.getAttribute('id');
-        }
-    });
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}` || link.getAttribute('href').endsWith(`#${id}`)) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, options);
 
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${currentSection}`) {
-            link.classList.add('active');
-        }
-    });
+    sections.forEach(section => observer.observe(section));
 }
 
 // Mobile menu functionality
@@ -165,17 +146,42 @@ function closeMobileMenu() {
 
 // Contact form functionality
 function initializeContactForm() {
+    // 1. Main Landing Page Form
     const contactForm = document.getElementById('quoteForm');
-
     if (contactForm) {
         contactForm.addEventListener('submit', handleFormSubmission);
-
-        // Add real-time validation
         const formInputs = contactForm.querySelectorAll('input, select, textarea');
         formInputs.forEach(input => {
             input.addEventListener('blur', validateField);
-            input.addEventListener('input', clearFieldError);
+            input.addEventListener('input', (e) => {
+                clearFieldError(e);
+                if (e.target.type === 'tel') formatPhoneInput(e);
+            });
         });
+    }
+
+    // 2. Quote Modal Form
+    const modalForm = document.getElementById('modalQuoteForm');
+    if (modalForm) {
+        modalForm.addEventListener('submit', handleFormSubmission);
+        const modalInputs = modalForm.querySelectorAll('input, select, textarea');
+        modalInputs.forEach(input => {
+            input.addEventListener('blur', validateField);
+            input.addEventListener('input', (e) => {
+                clearFieldError(e);
+                if (e.target.type === 'tel') formatPhoneInput(e);
+            });
+        });
+    }
+}
+
+// Phone input formatter
+function formatPhoneInput(e) {
+    const input = e.target;
+    // Strip non-numeric characters
+    const cleaned = input.value.replace(/\D/g, '');
+    if (input.value !== cleaned) {
+        input.value = cleaned;
     }
 }
 
@@ -196,8 +202,7 @@ function handleFormSubmission(e) {
         // Submit to Vercel API
         submitToAPI(formValues, form);
     } else {
-        // Show error notification if validation fails
-        showNotification('Please fill in all required fields correctly.', 'error');
+        // Validation failed - red borders and error messages will be shown by validateForm
     }
 }
 
@@ -229,31 +234,54 @@ function validateField(e) {
     let isValid = true;
     let errorMessage = '';
 
-    // Check if required field is empty
+    // 1. Check if required field is empty
     if (field.hasAttribute('required') && !value) {
         isValid = false;
         errorMessage = 'This field is required';
     }
-    // Validate email format
+    // 2. Name validation (Alphabet only, max 50)
+    else if (fieldName === 'name') {
+        const nameRegex = /^[A-Za-z\s]+$/;
+        if (!nameRegex.test(value)) {
+            isValid = false;
+            errorMessage = 'Please use alphabets only';
+        } else if (value.length > 50) {
+            isValid = false;
+            errorMessage = 'Maximum 50 characters allowed';
+        }
+    }
+    // 3. Phone validation (Exactly 10 digits, allows starting with 0)
+    else if (fieldType === 'tel' && value) {
+        const digits = value.replace(/\D/g, '');
+        if (digits.length !== 10) {
+            isValid = false;
+            errorMessage = 'Please enter exactly 10 digits';
+        }
+    }
+    // 4. Email validation (Standard format, max 60)
     else if (fieldType === 'email' && value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
             isValid = false;
-            errorMessage = 'Please enter a valid email address';
-        }
-    }
-    // Validate phone number (Indian format)
-    else if (fieldType === 'tel' && value) {
-        const phoneRegex = /^[6-9]\d{9}$/; // 10 digits starting with 6-9
-        if (!phoneRegex.test(value.replace(/\D/g, ''))) {
+            errorMessage = 'Invalid email address';
+        } else if (value.length > 60) {
             isValid = false;
-            errorMessage = 'Please enter a valid 10-digit mobile number';
+            errorMessage = 'Maximum 60 characters allowed';
         }
     }
-    // Validate select field
+    // 5. Select field validation
     else if (field.tagName === 'SELECT' && field.hasAttribute('required') && !value) {
         isValid = false;
         errorMessage = 'Please select an option';
+    }
+    // 6. Generic length checks (Moving From/To: 50, Notes: 255)
+    else if ((fieldName === 'moving_from' || fieldName === 'moving_to') && value.length > 50) {
+        isValid = false;
+        errorMessage = 'Maximum 50 characters allowed';
+    }
+    else if (fieldName === 'additional_info' && value.length > 255) {
+        isValid = false;
+        errorMessage = 'Maximum 255 characters allowed';
     }
 
     if (!isValid) {
@@ -267,19 +295,10 @@ function validateField(e) {
 function showFieldError(field, message) {
     field.classList.add('error');
 
-    // Remove existing error message
-    const existingError = field.parentNode.querySelector('.error-message');
-    if (existingError) {
-        existingError.remove();
-    }
-
-    // Add error message
+    // Add error message class for CSS-based styling
     const errorElement = document.createElement('div');
     errorElement.className = 'error-message';
     errorElement.textContent = message;
-    errorElement.style.color = 'var(--color-error)';
-    errorElement.style.fontSize = 'var(--font-size-sm)';
-    errorElement.style.marginTop = 'var(--space-4)';
 
     field.parentNode.appendChild(errorElement);
 }
@@ -315,48 +334,33 @@ function showFormSuccess(form) {
     // Clear form
     form.reset();
 
+    // Close quote modal if open
+    closeQuoteModal();
+
     // Show success modal
     const modal = document.getElementById('successModal');
     if (modal) {
         modal.classList.add('active');
-    } else {
-        showNotification('Quote request sent successfully! We will contact you soon.', 'success');
     }
-}
 
-// Modal functions
-function closeModal() {
-    const modal = document.getElementById('successModal');
-    if (modal) {
-        modal.classList.remove('active');
-    }
-}
-
-// API Submission
-async function submitToAPI(data, form) {
-    // Replace with your actual Netlify site URL once deployed
-    // Example: https://ultra-pro0-packers.netlify.app/.netlify/functions/quote
-    const API_ENDPOINT = '/.netlify/functions/quote';
-
-    try {
-        const response = await fetch(API_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'cors',
-            body: JSON.stringify(data)
+    // Google Ads & GA4 Tracking
+    if (typeof gtag === 'function') {
+        // 1. Google Ads Lead Conversion (Change YOUR_LABEL to yours later)
+        gtag('event', 'conversion', {
+            'send_to': 'AW-17847560693/Quote_Submission',
+            'value': 1.0,
+            'currency': 'INR'
         });
 
-        if (response.ok) {
-            showFormSuccess(form);
-        } else {
-            const errorData = await response.json();
-            showNotification(errorData.error || 'Failed to send quote. Please try again or call us.', 'error');
-            resetFormSubmitButton(form);
-        }
-    } catch (error) {
-        console.error('API Error:', error);
-        showNotification('Network error. Please check your connection and try again.', 'error');
-        resetFormSubmitButton(form);
+        // 2. GA4 standard lead event
+        gtag('event', 'generate_lead', {
+            'event_category': 'Engagement',
+            'event_label': 'Quote Form Submission',
+            'value': 1.0,
+            'currency': 'INR'
+        });
+
+        console.log('Lead conversion tracked successfully');
     }
 }
 
@@ -368,91 +372,63 @@ function resetFormSubmitButton(form) {
     }
 }
 
-// Show notification
-function showNotification(message, type = 'info') {
-    // Remove existing notification
-    const existingNotification = document.querySelector('.notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
+// API Submission
+async function submitToAPI(data, form) {
+    const API_ENDPOINT = '/.netlify/functions/quote';
 
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification--${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas fa-${getNotificationIcon(type)}"></i>
-            <span>${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
+    try {
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
 
-    // Style the notification
-    notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: var(--color-surface);
-        color: var(--color-text);
-        padding: var(--space-16);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        border-left: 4px solid ${getNotificationColor(type)};
-        z-index: 10000;
-        max-width: 400px;
-        animation: slideInRight 0.3s ease-out;
-    `;
-
-    // Add notification styles
-    const notificationContent = notification.querySelector('.notification-content');
-    notificationContent.style.cssText = `
-        display: flex;
-        align-items: center;
-        gap: var(--space-12);
-    `;
-
-    const closeButton = notification.querySelector('.notification-close');
-    closeButton.style.cssText = `
-        background: none;
-        border: none;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-        padding: var(--space-4);
-        margin-left: auto;
-    `;
-
-    // Add to page
-    document.body.appendChild(notification);
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
+        if (response.ok) {
+            showFormSuccess(form);
+        } else {
+            console.error('Submission failed with status:', response.status);
+            // TR0UBLESH00TING: Uncomment line below to see detailed server error
+            // alert('Server Error: ' + response.status + ' ' + response.statusText);
+            resetFormSubmitButton(form);
         }
-    }, 5000);
-}
-
-// Get notification icon based on type
-function getNotificationIcon(type) {
-    switch (type) {
-        case 'success': return 'check-circle';
-        case 'error': return 'exclamation-circle';
-        case 'warning': return 'exclamation-triangle';
-        default: return 'info-circle';
+    } catch (error) {
+        console.error('API Connection Error:', error);
+        // TR0UBLESH00TING: Uncomment line below if form is stuck in 'Sending...'
+        // alert('Connection Error: Could not reach the server.');
+        resetFormSubmitButton(form);
     }
 }
 
-// Get notification color based on type
-function getNotificationColor(type) {
-    switch (type) {
-        case 'success': return 'var(--color-success)';
-        case 'error': return 'var(--color-error)';
-        case 'warning': return 'var(--color-warning)';
-        default: return 'var(--color-info)';
+// Modal functions
+function openQuoteModal() {
+    const modal = document.getElementById('quoteModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.classList.add('modal-open');
+        // Small delay to allow CSS transition, then focus
+        setTimeout(() => {
+            const firstInput = document.getElementById('modal-name');
+            if (firstInput) firstInput.focus();
+        }, 400);
     }
 }
+
+function closeQuoteModal() {
+    const modal = document.getElementById('quoteModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+}
+
+function closeModal(modalId = 'successModal') {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+}
+
 
 // Initialize scroll effects
 function initializeScrollEffects() {
@@ -467,26 +443,61 @@ function initializeScrollEffects() {
             header.style.boxShadow = 'var(--shadow-sm)';
         }
     });
+}
 
-    // Intersection Observer for animations
-    const observerOptions = {
+// Unified Reveal Observer for animations and custom triggers
+function initializeRevealObserver() {
+    const options = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
     };
 
-    const observer = new IntersectionObserver(function (entries) {
+    const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('animate');
+                const target = entry.target;
+
+                // 1. Core Animation Trigger
+                target.classList.add('animate');
+
+                // 2. Specialized Triggers (Stats Counter)
+                if (target.id === 'stat-projects' && !target.dataset.started) {
+                    target.dataset.started = 'true';
+                    animateStatsCounter(target);
+                }
+
+                // Stop observing if it's a one-time animation
+                if (!target.hasAttribute('data-animate-repeat')) {
+                    obs.unobserve(target);
+                }
             }
         });
-    }, observerOptions);
+    }, options);
 
-    // Observe elements for animation
-    const animatedElements = document.querySelectorAll('.service-card, .contact-item, .about-text, [data-animate]');
-    animatedElements.forEach(element => {
-        observer.observe(element);
-    });
+    // Register all elements
+    const revealElements = document.querySelectorAll('.service-card, .contact-item, .about-text, [data-animate], #stat-projects');
+    revealElements.forEach(el => observer.observe(el));
+}
+function animateStatsCounter(el) {
+    const targetText = el.textContent.trim();
+    const match = targetText.match(/(\d[\d,]*)/);
+    if (!match) return;
+
+    const target = parseInt(match[1].replace(/,/g, ''), 10);
+    const suffix = targetText.replace(match[1], '');
+    const duration = 1400;
+    const formatNumber = (n) => n.toLocaleString('en-IN');
+
+    const start = performance.now();
+    const tick = (now) => {
+        const p = Math.min(1, (now - start) / duration);
+        const ease = 1 - Math.pow(1 - p, 3); // cubic out
+        const current = Math.floor(target * ease);
+        el.textContent = `${formatNumber(current)}${suffix}`;
+        if (p < 1) requestAnimationFrame(tick);
+        else el.textContent = `${formatNumber(target)}${suffix}`;
+    };
+    requestAnimationFrame(tick);
 }
 
 function initializeServiceCardTilt() {
@@ -548,75 +559,132 @@ function initializeServiceCardTilt() {
     });
 }
 
-// Phone number click tracking
-document.addEventListener('DOMContentLoaded', function () {
-    const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
-    phoneLinks.forEach(link => {
-        link.addEventListener('click', function () {
-            console.log('Phone number clicked:', this.href);
-        });
-    });
-});
+// Consolidated Event Tracking
+function initializeEventTracking() {
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        const button = e.target.closest('button');
 
-// Email link click tracking
-document.addEventListener('DOMContentLoaded', function () {
-    const emailLinks = document.querySelectorAll('a[href^="mailto:"]');
-    emailLinks.forEach(link => {
-        link.addEventListener('click', function () {
-            console.log('Email link clicked:', this.href);
-        });
-    });
-});
+        // 1. Link Tracking (Phone, Email, WhatsApp)
+        if (link) {
+            const href = link.getAttribute('href') || '';
+            let type = '';
 
-function initializeAboutStatsCounter() {
-    const el = document.getElementById('stat-projects');
-    if (!el) return;
+            if (href.startsWith('tel:')) type = 'phone';
+            else if (href.startsWith('mailto:')) type = 'email';
+            else if (href.includes('wa.me') || href.includes('whatsapp.com')) type = 'whatsapp';
 
-    const targetText = el.textContent.trim();
-    const match = targetText.match(/(\d[\d,]*)/);
-    if (!match) return;
-
-    const target = parseInt(match[1].replace(/,/g, ''), 10);
-    const suffix = targetText.replace(match[1], '');
-
-    let started = false;
-    const duration = 1400;
-
-    const formatNumber = (n) => n.toLocaleString('en-IN');
-
-    const animate = () => {
-        const start = performance.now();
-
-        const tick = (now) => {
-            const p = Math.min(1, (now - start) / duration);
-            const ease = 1 - Math.pow(1 - p, 3); // cubic out
-            const current = Math.floor(target * ease);
-            el.textContent = `${formatNumber(current)}${suffix}`;
-            if (p < 1) {
-                requestAnimationFrame(tick);
-            } else {
-                el.textContent = `${formatNumber(target)}${suffix}`;
+            if (type) {
+                console.log(`${type} link clicked:`, href);
+                trackEvent(`${type}_click`, { 'event_label': type });
             }
-        };
+        }
 
-        requestAnimationFrame(tick);
-    };
+        // 2. Button Tracking (Quote triggers)
+        if (button) {
+            const isQuoteBtn = button.classList.contains('quote-btn') ||
+                button.classList.contains('hero-cta') ||
+                button.classList.contains('service-quote-btn');
 
-    const onIntersect = (entries, obs) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !started) {
-                started = true;
-                animate();
-                obs.disconnect();
+            if (isQuoteBtn) {
+                console.log('Quote button clicked');
+                trackEvent('quote_button_click', { 'event_label': button.textContent.trim() });
             }
-        });
-    };
-
-    const observer = new IntersectionObserver(onIntersect, { threshold: 0.3 });
-    observer.observe(el);
+        }
+    });
 }
+
+// Helper to fire both GA4 and Ads events
+function trackEvent(name, params = {}) {
+    if (typeof gtag !== 'function') return;
+
+    // GA4 Event
+    gtag('event', name, {
+        'event_category': 'Engagement',
+        ...params
+    });
+
+    // Ads Conversion (Optional secondary)
+    gtag('event', 'conversion', {
+        'send_to': `AW-17847560693/${name}`,
+        'value': 1.0,
+        'currency': 'INR'
+    });
+}
+
+// Removed: Now handled by unified reveal observer
+
+function initializeServicesTabs() {
+    const serviceGroups = document.querySelectorAll('.service-group');
+    if (!serviceGroups.length) return;
+
+    serviceGroups.forEach(group => {
+        const trigger = group.querySelector('.service-trigger');
+        if (!trigger) return;
+
+        trigger.addEventListener('click', () => {
+            const isMobile = window.innerWidth <= 768;
+            const isActive = group.classList.contains('active');
+
+            if (isMobile && isActive) {
+                // Collapse if already active on mobile
+                group.classList.remove('active');
+                return;
+            }
+
+            // Reset all and set active
+            serviceGroups.forEach(g => g.classList.remove('active'));
+            group.classList.add('active');
+        });
+    });
+}
+
+// Dynamic Gallery Logic
+const GALLERY_CONFIG = {
+    folder: 'images/gallery/',
+    images: [
+        { name: 'Bike Shifting Mar 2026.png', wide: true },
+        { name: 'office shifting Mar 2026.png', wide: false },
+        { name: 'office shifting 2 mar 2026.png', wide: true },
+        { name: 'Packaging mar 2026.jpeg', wide: true }
+    ]
+};
+
+function initializeDynamicGallery() {
+    const wrapper = document.querySelector('.gallery-scroll-wrapper');
+    if (!wrapper) return;
+
+    const isFullPage = wrapper.id === 'full-gallery-wrapper';
+
+    // Shuffle and pick 4 for homepage, or show all for gallery page
+    const selected = isFullPage ? GALLERY_CONFIG.images : [...GALLERY_CONFIG.images].sort(() => 0.5 - Math.random()).slice(0, 4);
+
+    wrapper.innerHTML = '';
+
+    selected.forEach(imgData => {
+        const item = document.createElement('div');
+        item.className = `gallery-item ${imgData.wide ? 'gallery-item--wide' : ''}`;
+
+        const caption = imgData.name.split('.')[0]
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+
+        item.innerHTML = `
+            <img src="${GALLERY_CONFIG.folder}${imgData.name}" alt="${caption}" loading="lazy">
+            <div class="gallery-item-overlay">
+                <span class="gallery-item-name">${caption}</span>
+            </div>
+        `;
+        wrapper.appendChild(item);
+    });
+}
+
 
 // Global functions to make them available
 window.scrollToContact = scrollToContact;
 window.toggleMobileMenu = toggleMobileMenu;
 window.closeModal = closeModal;
+window.openQuoteModal = openQuoteModal;
+window.closeQuoteModal = closeQuoteModal;
+window.initializeDynamicGallery = initializeDynamicGallery;
+

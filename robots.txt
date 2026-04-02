@@ -1,4 +1,29 @@
+User-agent: Applebot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AwarioBot
+Disallow: /
+
 User-agent: *
 Allow: /
+Disallow: /netlify/
+Disallow: /.netlify/
+Disallow: /apple-app-site-association
+Disallow: /.well-known/
 
 Sitemap: https://ultrapropackers.in/sitemap.xml

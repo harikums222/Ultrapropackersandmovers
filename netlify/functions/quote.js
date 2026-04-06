@@ -13,10 +13,10 @@ exports.handler = async (event, context) => {
         'https://curious-crostata-2d46a4.netlify.app',
         'https://ultrapropackers.in'
     ];
-    
+
     // Normalize case as browsers may send 'origin' or 'Origin'
     const requestOrigin = event.headers.origin || event.headers.Origin;
-    
+
     if (allowedOrigins.includes(requestOrigin)) {
         headers['Access-Control-Allow-Origin'] = requestOrigin;
     }
@@ -73,15 +73,15 @@ exports.handler = async (event, context) => {
 
         // Format service name for better display (e.g., home-relocation -> Home Relocation)
         const formatLabel = (slug) => slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-        
+
         // Clean phone for links (remove spaces, etc.)
         const cleanPhone = phone.replace(/\D/g, '');
         const waPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-        
-        const timestamp = new Date().toLocaleString('en-IN', { 
+
+        const timestamp = new Date().toLocaleString('en-IN', {
             timeZone: 'Asia/Kolkata',
-            hour12: true, 
-            hour: 'numeric', 
+            hour12: true,
+            hour: 'numeric',
             minute: 'numeric',
             day: 'numeric',
             month: 'short'
@@ -89,20 +89,22 @@ exports.handler = async (event, context) => {
 
         const text = `
 🚀 *NEW QUOTE REQUEST*
----
+--------------------------
+🕒 *Received*: ${timestamp}
+
 👤 *Customer*: *${name}*
 📞 *Phone*: *${phone}*
-📧 *Email*: *${email || 'Not provided'}*
+📧 *Email*: *${email || '-'}*
 
 🛠️ *Service*: *${formatLabel(service)}*
 📍 *Moving From*: *${moving_from}*
 🏁 *Moving To*: *${moving_to}*
-📝 *Notes*: _${additional_info || 'None'}_
+📝 *Notes*: _${additional_info || '-'}_
 
-🕒 *Received*: ${timestamp}
----
-📱 [**Call Customer**](tel:${phone})
-💬 [**Chat on WhatsApp**](https://wa.me/${waPhone})
+--------------------------
+
+📱 [Call Customer](tel:${cleanPhone})
+💬 [Chat on WhatsApp](https://wa.me/${waPhone})
 
 _Source: Ultra Pro Website_
     `.trim();
@@ -119,7 +121,8 @@ _Source: Ultra Pro Website_
                     body: JSON.stringify({
                         chat_id: chatId.trim(),
                         text,
-                        parse_mode: 'Markdown'
+                        parse_mode: 'Markdown',
+                        disable_web_page_preview: true
                     })
                 });
                 if (telegramResp.ok) successCount++;

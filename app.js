@@ -274,10 +274,10 @@ function validateField(e) {
         isValid = false;
         errorMessage = 'Please select an option';
     }
-    // 6. Generic length checks (Moving From/To: 50, Notes: 255)
-    else if ((fieldName === 'moving_from' || fieldName === 'moving_to') && value.length > 50) {
+    // 6. Generic length checks (Moving From/To: 124, Notes: 255)
+    else if ((fieldName === 'moving_from' || fieldName === 'moving_to') && value.length > 124) {
         isValid = false;
-        errorMessage = 'Maximum 50 characters allowed';
+        errorMessage = 'Maximum 124 characters allowed';
     }
     else if (fieldName === 'additional_info' && value.length > 255) {
         isValid = false;
@@ -632,9 +632,8 @@ function initializeServicesTabs() {
                 return;
             }
 
-            // Reset all and set active
-            serviceGroups.forEach(g => g.classList.remove('active'));
-            group.classList.add('active');
+            // Toggle active state for current item
+            group.classList.toggle('active');
         });
     });
 }

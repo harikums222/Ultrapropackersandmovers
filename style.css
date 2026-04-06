@@ -881,6 +881,15 @@ body:not(.home-page) main {
   font-family: 'Inter', sans-serif;
   text-decoration: none;
   flex-shrink: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.logo:hover {
+  opacity: 0.85;
+}
+
+.logo:active {
+  transform: scale(0.98);
 }
 
 .logo-text {
@@ -2334,11 +2343,20 @@ body:not(.home-page) main {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-base);
     overflow: hidden;
+    scroll-margin-top: 100px; /* Better alignment if browser auto-scrolls */
+    transition: box-shadow 0.3s ease;
+  }
+
+  .service-group.active {
+    overflow: visible; /* Prevent any internal scrollbars when open */
+    box-shadow: var(--shadow-md);
   }
 
   .service-trigger {
     border: none !important;
     padding: var(--space-16) var(--space-20);
+    width: 100%;
+    z-index: 2;
   }
 
   .service-trigger:hover {

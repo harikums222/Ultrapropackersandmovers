@@ -44,9 +44,9 @@ exports.handler = async (event, context) => {
 
     try {
         const body = JSON.parse(event.body);
-        const { name, phone, email, service, moving_from, moving_to, additional_info } = body;
+        const { name, phone, email, service, moving_date, moving_from, moving_to, additional_info } = body;
 
-        if (!name || !phone || !service || !moving_from || !moving_to) {
+        if (!name || !phone || !service || !moving_date || !moving_from || !moving_to) {
             return {
                 statusCode: 400,
                 headers,
@@ -97,6 +97,7 @@ exports.handler = async (event, context) => {
 📧 *Email*: *${email || '-'}*
 
 🛠️ *Service*: *${formatLabel(service)}*
+📅 *Moving Date*: *${moving_date}*
 📍 *Moving From*: *${moving_from}*
 🏁 *Moving To*: *${moving_to}*
 📝 *Notes*: _${additional_info || '-'}_

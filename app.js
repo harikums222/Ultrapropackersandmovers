@@ -152,7 +152,6 @@ function initializeContactForm() {
         contactForm.addEventListener('submit', handleFormSubmission);
         const formInputs = contactForm.querySelectorAll('input, select, textarea');
         formInputs.forEach(input => {
-            input.addEventListener('blur', validateField);
             input.addEventListener('input', (e) => {
                 clearFieldError(e);
                 if (e.target.type === 'tel') formatPhoneInput(e);
@@ -166,7 +165,6 @@ function initializeContactForm() {
         modalForm.addEventListener('submit', handleFormSubmission);
         const modalInputs = modalForm.querySelectorAll('input, select, textarea');
         modalInputs.forEach(input => {
-            input.addEventListener('blur', validateField);
             input.addEventListener('input', (e) => {
                 clearFieldError(e);
                 if (e.target.type === 'tel') formatPhoneInput(e);
@@ -283,6 +281,24 @@ function validateField(e) {
         isValid = false;
         errorMessage = 'Maximum 255 characters allowed';
     }
+    // 7. Date validation (Future date and max 2 months)
+    else if (fieldName === 'moving_date' && value) {
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const maxDate = new Date();
+        maxDate.setMonth(maxDate.getMonth() + 2);
+        maxDate.setHours(23, 59, 59, 999);
+
+        if (selectedDate < today) {
+            isValid = false;
+            errorMessage = 'Please select a future date';
+        } else if (selectedDate > maxDate) {
+            isValid = false;
+            errorMessage = 'Booking max 2 months in advance';
+        }
+    }
 
     if (!isValid) {
         showFieldError(field, errorMessage);
@@ -340,6 +356,7 @@ function showFormSuccess(form) {
     // Show success modal
     const modal = document.getElementById('successModal');
     if (modal) {
+        updateDynamicModalText(); // Update message based on time
         modal.classList.add('active');
     }
 
@@ -399,10 +416,35 @@ async function submitToAPI(data, form) {
     }
 }
 
+// Function to update modal messages based on time (9 PM - 6 AM off-hours)
+function updateDynamicModalText() {
+    const quoteMsgEl = document.getElementById('quote-modal-msg');
+    const successMsgEl = document.getElementById('success-modal-msg');
+
+    if (!quoteMsgEl && !successMsgEl) return;
+
+    const now = new Date();
+    const hour = now.getHours();
+
+    // Check if current time is between 9 PM (21) and 6 AM (6)
+    const isOffHours = hour >= 21 || hour < 6;
+
+    if (isOffHours) {
+        const offHoursMsg = "Note: Enqueries sent between 9 PM – 6 AM, Our team will reach you as soon as our office opens.";
+        if (quoteMsgEl) quoteMsgEl.textContent = `Fill in the details below. ${offHoursMsg}`;
+        if (successMsgEl) successMsgEl.textContent = `Your quote request has been received successfully. ${offHoursMsg}`;
+    } else {
+        // Business Hours
+        if (quoteMsgEl) quoteMsgEl.textContent = "Fill in the details below and we'll get back to you within 30 minutes.";
+        if (successMsgEl) successMsgEl.textContent = "Your quote request has been received successfully. Our team will contact you within 30 minutes.";
+    }
+}
+
 // Modal functions
 function openQuoteModal() {
     const modal = document.getElementById('quoteModal');
     if (modal) {
+        updateDynamicModalText(); // Update message based on time
         modal.classList.add('active');
         document.body.classList.add('modal-open');
         // Small delay to allow CSS transition, then focus

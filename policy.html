@@ -187,7 +187,7 @@
         <div class="modal-content modal-content--form">
             <button class="modal-close" onclick="closeQuoteModal()">&times;</button>
             <h3>Get Your Free Quote</h3>
-            <p>Fill in the details below and we'll get back to you within 30 minutes.</p>
+            <p id="quote-modal-msg">Fill in the details below and we'll get back to you within 30 minutes.</p>
             <form class="contact-form" id="modalQuoteForm">
                 <div class="form-row">
                     <div class="form-group">
@@ -199,17 +199,23 @@
                         <input type="tel" id="modal-phone" name="phone" class="form-control" maxlength="10" required>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="modal-service" class="form-label">Service Required *</label>
-                    <select id="modal-service" name="service" class="form-control" required>
-                        <option value="">Select a service</option>
-                        <option value="home-relocation">Home Relocation</option>
-                        <option value="office-shifting">Office Shifting</option>
-                        <option value="expert-packing">Expert Packing</option>
-                        <option value="bike-transport">Bike/Scooty Transport</option>
-                        <option value="car-transport">Car Transport</option>
-                        <option value="other">Other</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modal-service" class="form-label">Service Required *</label>
+                        <select id="modal-service" name="service" class="form-control" required>
+                            <option value="">Select a service</option>
+                            <option value="home-relocation">Home Relocation</option>
+                            <option value="office-shifting">Office Shifting</option>
+                            <option value="expert-packing">Expert Packing</option>
+                            <option value="bike-transport">Bike/Scooty Transport</option>
+                            <option value="car-transport">Car Transport</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-date" class="form-label">Moving Date *</label>
+                        <input type="date" id="modal-date" name="moving_date" class="form-control" required>
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -238,7 +244,7 @@
         <div class="modal-content">
             <i class="fas fa-check-circle success-icon"></i>
             <h2>Thank You!</h2>
-            <p>Your quote request has been received successfully. Our team will contact you within 30 minutes.</p>
+            <p id="success-modal-msg">Your quote request has been received successfully. Our team will contact you within 30 minutes.</p>
             <button class="btn btn--primary" onclick="closeModal('successModal')">Close</button>
         </div>
     </div>

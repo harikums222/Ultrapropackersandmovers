@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // 2. Interactive Lead Capture
     initializeContactForm(); // Restored
     initializeServicesTabs();
-    initializeDynamicGallery();
+    initializeLocalitySearch();
+    initializeFaqSearch();
 
     // 3. Authority & Tracking
     initializeEventTracking();
@@ -680,45 +681,7 @@ function initializeServicesTabs() {
     });
 }
 
-// Dynamic Gallery Logic
-const GALLERY_CONFIG = {
-    folder: 'images/gallery/',
-    images: [
-        { name: 'Bike Shifting Mar 2026.png', wide: true },
-        { name: 'office shifting Mar 2026.png', wide: false },
-        { name: 'office shifting 2 mar 2026.png', wide: true },
-        { name: 'Packaging mar 2026.jpeg', wide: true }
-    ]
-};
 
-function initializeDynamicGallery() {
-    const wrapper = document.querySelector('.gallery-scroll-wrapper');
-    if (!wrapper) return;
-
-    const isFullPage = wrapper.id === 'full-gallery-wrapper';
-
-    // Shuffle and pick 4 for homepage, or show all for gallery page
-    const selected = isFullPage ? GALLERY_CONFIG.images : [...GALLERY_CONFIG.images].sort(() => 0.5 - Math.random()).slice(0, 4);
-
-    wrapper.innerHTML = '';
-
-    selected.forEach(imgData => {
-        const item = document.createElement('div');
-        item.className = `gallery-item ${imgData.wide ? 'gallery-item--wide' : ''}`;
-
-        const caption = imgData.name.split('.')[0]
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, c => c.toUpperCase());
-
-        item.innerHTML = `
-            <img src="${GALLERY_CONFIG.folder}${imgData.name}" alt="${caption}" loading="lazy">
-            <div class="gallery-item-overlay">
-                <span class="gallery-item-name">${caption}</span>
-            </div>
-        `;
-        wrapper.appendChild(item);
-    });
-}
 
 
 // Global functions to make them available
@@ -727,5 +690,157 @@ window.toggleMobileMenu = toggleMobileMenu;
 window.closeModal = closeModal;
 window.openQuoteModal = openQuoteModal;
 window.closeQuoteModal = closeQuoteModal;
-window.initializeDynamicGallery = initializeDynamicGallery;
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+
+// Lightbox Modal Functions
+function openLightbox(imgSrc, captionText) {
+    const modal = document.getElementById('lightboxModal');
+    const img = document.getElementById('lightboxImg');
+    const caption = document.getElementById('lightboxCaption');
+    if (modal && img) {
+        img.src = imgSrc;
+        if (caption) caption.textContent = captionText;
+        modal.classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+}
+
+function closeLightbox() {
+    const modal = document.getElementById('lightboxModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+}
+
+// Locality Search functionality (SEO safe)
+function initializeLocalitySearch() {
+    const searchInput = document.getElementById('areaSearchInput');
+    const feedback = document.getElementById('areaSearchFeedback');
+    const areaSections = document.querySelectorAll('.area-section p');
+    
+    if (!searchInput || !areaSections.length) return;
+
+    // Dynamically wrap raw text nodes in span.area-item
+    areaSections.forEach(p => {
+        const nodes = Array.from(p.childNodes);
+        p.innerHTML = '';
+        nodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const fullText = node.textContent;
+                const trimmedText = fullText.trim();
+                if (trimmedText) {
+                    const leadingSpaceCount = fullText.length - fullText.trimStart().length;
+                    const trailingSpaceCount = fullText.length - fullText.trimEnd().length;
+                    
+                    if (leadingSpaceCount > 0) {
+                        p.appendChild(document.createTextNode(' '.repeat(leadingSpaceCount)));
+                    }
+                    
+                    const span = document.createElement('span');
+                    span.className = 'area-item';
+                    span.textContent = trimmedText;
+                    p.appendChild(span);
+                    
+                    if (trailingSpaceCount > 0) {
+                        p.appendChild(document.createTextNode(' '.repeat(trailingSpaceCount)));
+                    }
+                } else {
+                    p.appendChild(node.cloneNode(true));
+                }
+            } else {
+                p.appendChild(node.cloneNode(true));
+            }
+        });
+    });
+
+    const areaItems = document.querySelectorAll('.area-item');
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        
+        // Clear previous highlights & feedback
+        areaItems.forEach(item => item.classList.remove('area-dot-highlight'));
+        if (feedback) {
+            feedback.className = 'area-search-feedback';
+            feedback.innerHTML = '';
+        }
+
+        if (!query) return;
+
+        let matches = [];
+        let exactMatch = null;
+
+        areaItems.forEach(item => {
+            const name = item.textContent.trim().toLowerCase();
+            if (name.includes(query)) {
+                matches.push(item);
+                if (name === query) exactMatch = item;
+            }
+        });
+
+        if (feedback) {
+            if (matches.length > 0) {
+                matches.forEach(item => item.classList.add('area-dot-highlight'));
+                feedback.classList.add('success');
+                const matchName = exactMatch ? exactMatch.textContent.trim() : matches[0].textContent.trim();
+                feedback.innerHTML = `<i class="fas fa-check-circle"></i> Yes, we serve <strong>${matchName}</strong>! <button class="btn btn--primary btn--sm" onclick="openQuoteModal()" style="margin-left: 10px; padding: 4px 12px; font-size: 12px; border-radius: 4px; display: inline-block;">Get Quote</button>`;
+            } else {
+                feedback.classList.add('error');
+                feedback.innerHTML = `<i class="fas fa-info-circle"></i> Locality not found? We still serve most of Chennai. <button class="btn btn--primary btn--sm" onclick="openQuoteModal()" style="margin-left: 10px; padding: 4px 12px; font-size: 12px; border-radius: 4px; display: inline-block;">Request Quote</button>`;
+            }
+        }
+    });
+}
+
+// FAQ Search functionality
+function initializeFaqSearch() {
+    const searchInput = document.getElementById('faqSearchInput');
+    const faqGroups = document.querySelectorAll('.faq .service-group');
+    const categories = document.querySelectorAll('.faq-category-title');
+    const noResults = document.getElementById('faqNoResults');
+    
+    if (!searchInput || !faqGroups.length) return;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        faqGroups.forEach(group => {
+            const trigger = group.querySelector('.service-trigger');
+            const panel = group.querySelector('.service-panel');
+            
+            const triggerText = trigger ? trigger.textContent.toLowerCase() : '';
+            const panelText = panel ? panel.textContent.toLowerCase() : '';
+
+            if (triggerText.includes(query) || panelText.includes(query)) {
+                group.style.display = 'block';
+                visibleCount++;
+            } else {
+                group.style.display = 'none';
+            }
+        });
+
+        // Hide/show category headings based on matching items
+        categories.forEach(category => {
+            const stack = category.nextElementSibling;
+            if (stack && stack.classList.contains('faq-modern-stack')) {
+                const childGroups = stack.querySelectorAll('.service-group');
+                let categoryVisible = false;
+                childGroups.forEach(group => {
+                    if (group.style.display !== 'none') {
+                        categoryVisible = true;
+                    }
+                });
+                category.style.display = categoryVisible ? 'block' : 'none';
+            }
+        });
+
+        // Toggle no-results container
+        if (noResults) {
+            noResults.style.display = (visibleCount === 0 && query !== '') ? 'block' : 'none';
+        }
+    });
+}
 

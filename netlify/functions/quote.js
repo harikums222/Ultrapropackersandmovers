@@ -44,7 +44,7 @@ exports.handler = async (event, context) => {
 
     try {
         const body = JSON.parse(event.body);
-        const { name, phone, email, service, moving_date, moving_from, moving_to, additional_info } = body;
+        const { name, phone, email, service, moving_date, moving_from, moving_to, additional_info, message } = body;
 
         if (!name || !phone || !service || !moving_date || !moving_from || !moving_to) {
             return {
@@ -52,6 +52,32 @@ exports.handler = async (event, context) => {
                 headers,
                 body: JSON.stringify({ error: 'Missing required fields' })
             };
+        }
+
+        const notesText = additional_info || message || '-';
+
+        // Google Sheets Integration
+        const GOOGLE_SHEET_WEBHOOK = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+        if (GOOGLE_SHEET_WEBHOOK) {
+            try {
+                // Submit asynchronously without blocking the Telegram message
+                await fetch(GOOGLE_SHEET_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        phone,
+                        email: email || '',
+                        service,
+                        moving_date,
+                        moving_from,
+                        moving_to,
+                        additional_info: notesText === '-' ? '' : notesText
+                    })
+                });
+            } catch (sheetErr) {
+                console.error('Failed to submit to Google Sheets:', sheetErr);
+            }
         }
 
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -77,6 +103,7 @@ exports.handler = async (event, context) => {
         // Clean phone for links (remove spaces, etc.)
         const cleanPhone = phone.replace(/\D/g, '');
         const waPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+        const telPhone = cleanPhone.length === 10 ? `+91${cleanPhone}` : (phone.startsWith('+') ? phone : `+${cleanPhone}`);
 
         const timestamp = new Date().toLocaleString('en-IN', {
             timeZone: 'Asia/Kolkata',
@@ -88,26 +115,28 @@ exports.handler = async (event, context) => {
         });
 
         const text = `
-🚀 *NEW QUOTE REQUEST*
+🚀 <b>*NEW QUOTE REQUEST*</b>
 --------------------------
-🕒 *Received*: ${timestamp}
+🕒 <b>Received</b>: ${timestamp}
 
-👤 *Customer*: *${name}*
-📞 *Phone*: *${phone}*
-📧 *Email*: *${email || '-'}*
+👤 <b>Customer</b>: <b>${name}</b>
+📞 <b>Phone</b>: <b>${phone}</b>
+📧 <b>Email</b>: <b>${email || '-'}</b>
 
-🛠️ *Service*: *${formatLabel(service)}*
-📅 *Moving Date*: *${moving_date}*
-📍 *Moving From*: *${moving_from}*
-🏁 *Moving To*: *${moving_to}*
-📝 *Notes*: _${additional_info || '-'}_
+🛠️ <b>Service</b>: <b>${formatLabel(service)}</b>
+📅 <b>Moving Date</b>: <b>${moving_date}</b>
+📍 <b>Moving From</b>: <b>${moving_from}</b>
+🏁 <b>Moving To</b>: <b>${moving_to}</b>
+📝 <b>Notes</b>: <i>${notesText}</i>
 
 --------------------------
 
-📱 [Call Customer](tel:${cleanPhone})
-💬 [Chat on WhatsApp](https://wa.me/${waPhone})
+📞 <b>Click to call customer</b>: <a href="tel:${telPhone}">${phone}</a>
+📋 <b>Click to Copy Number</b>: <code>${phone}</code>
 
-_Source: Ultra Pro Website_
+💬 <b>WhatsApp</b>: <a href="https://wa.me/${waPhone}">Chat on WhatsApp</a>
+
+<i>Source: Ultra Pro Website</i>
     `.trim();
 
         const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -122,7 +151,7 @@ _Source: Ultra Pro Website_
                     body: JSON.stringify({
                         chat_id: chatId.trim(),
                         text,
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         disable_web_page_preview: true
                     })
                 });

@@ -669,14 +669,20 @@ function initializeServicesTabs() {
             const isMobile = window.innerWidth <= 768;
             const isActive = group.classList.contains('active');
 
-            if (isMobile && isActive) {
-                // Collapse if already active on mobile
-                group.classList.remove('active');
-                return;
+            if (isMobile) {
+                if (isActive) {
+                    // Collapse if already active on mobile
+                    group.classList.remove('active');
+                } else {
+                    group.classList.add('active');
+                }
+            } else {
+                // Desktop: Ensure only one tab is active at a time
+                if (!isActive) {
+                    serviceGroups.forEach(g => g.classList.remove('active'));
+                    group.classList.add('active');
+                }
             }
-
-            // Toggle active state for current item
-            group.classList.toggle('active');
         });
     });
 }

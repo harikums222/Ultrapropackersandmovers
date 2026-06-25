@@ -131,8 +131,9 @@ exports.handler = async (event, context) => {
 
 --------------------------
 
-📞 <b>Call Customer</b>: <a href="tel:${telPhone}">${phone}</a>
-📋 <b>Copy Phone</b>: <code>${phone}</code>
+📞 <b>Click to call customer</b>: <a href="tel:${telPhone}">${phone}</a>
+📋 <b>Click to Copy Number</b>: <code>${phone}</code>
+
 💬 <b>WhatsApp</b>: <a href="https://wa.me/${waPhone}">Chat on WhatsApp</a>
 
 <i>Source: Ultra Pro Website</i>
